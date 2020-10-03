@@ -1,7 +1,7 @@
 # text_span_field_plus
 
 Flutter自定义文本样式输入框，可以让你在TextField中显示不同样式的文本，例如 #话题# @用户 效果
-TextSpanDisplay可以回显#话题#以及@用户效果，本插件改自text_span_field
+TextSpanDisplay可以回显#话题#以及@用户效果，本插件改自text_span_field，增加了显示功能以及修复了符号嵌套报错的bug
 
 ### 安装
 在工程 pubspec.yaml 中加入 dependencies

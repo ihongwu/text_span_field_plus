@@ -11,7 +11,7 @@
 
 ```
 dependencies:
-  text_span_field_plus: ^1.0.4
+  text_span_field_plus: ^1.0.6
 ```
 ## 效果图
 <img src="https://raw.githubusercontent.com/ihongwu/text_span_field_plus/main/gif.gif" width="400">

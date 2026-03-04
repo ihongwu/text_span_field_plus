@@ -21,20 +21,20 @@ typedef InputCounterWidgetBuilder = Widget Function(
     BuildContext context, {
 
       /// The length of the string currently in the input.
-      @required int currentLength,
+      required int currentLength,
 
       /// The maximum string length that can be entered into the TextSpanFieldPlus.
-      @required int maxLength,
+      required int? maxLength,
 
       /// Whether or not the TextSpanFieldPlus is currently focused.  Mainly provided for
       /// the [liveRegion] parameter in the [Semantics] widget for accessibility.
-      @required bool isFocused,
+      required bool isFocused,
     });
 
 class _TextSpanFieldPlusSelectionGestureDetectorBuilder
     extends TextSelectionGestureDetectorBuilder {
   _TextSpanFieldPlusSelectionGestureDetectorBuilder({
-    @required _TextSpanFieldPlusState state,
+    required _TextSpanFieldPlusState state,
   })  : _state = state,
         super(delegate: state);
 
@@ -78,7 +78,7 @@ class _TextSpanFieldPlusSelectionGestureDetectorBuilder
   }
 
   @override
-  void onSingleTapUp(TapUpDetails details) {
+  void onSingleTapUp(TapDragUpDetails details) {
     editableText.hideToolbar();
     if (delegate.selectionEnabled) {
       switch (Theme.of(_state.context).platform) {
@@ -94,7 +94,7 @@ class _TextSpanFieldPlusSelectionGestureDetectorBuilder
       }
     }
     _state._requestKeyboard();
-    if (_state.widget.onTap != null) _state.widget.onTap();
+    _state.widget.onTap?.call();
   }
 
   @override
@@ -289,11 +289,11 @@ class TextSpanFieldPlus extends StatefulWidget {
   ///  * [maxLength], which discusses the precise meaning of "number of
   ///    characters" and how it may differ from the intuitive meaning.
   const TextSpanFieldPlus({
-    Key key,
+    Key? key,
     this.controller,
     this.focusNode,
     this.decoration = const InputDecoration(),
-    TextInputType keyboardType,
+    TextInputType keyboardType = TextInputType.text,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
     this.style,
@@ -302,7 +302,8 @@ class TextSpanFieldPlus extends StatefulWidget {
     this.textAlignVertical,
     this.textDirection,
     this.readOnly = false,
-    ToolbarOptions toolbarOptions,
+    @Deprecated('Use contextMenuBuilder instead.')
+    ToolbarOptions? toolbarOptions,
     this.showCursor,
     this.autofocus = false,
     this.obscureText = false,
@@ -330,6 +331,7 @@ class TextSpanFieldPlus extends StatefulWidget {
     this.scrollController,
     this.scrollPhysics,
     this.rangeStyles,
+    this.onAtInput,
   })  : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -373,12 +375,12 @@ class TextSpanFieldPlus extends StatefulWidget {
         super(key: key);
 
   /// Custom Styles
-  final List<RangeStyle> rangeStyles;
+  final List<RangeStyle>? rangeStyles;
 
   /// Controls the text being edited.
   ///
   /// If null, this widget will create its own [TextEditingController].
-  final TextEditingController controller;
+  final TextEditingController? controller;
 
   /// Defines the keyboard focus for this widget.
   ///
@@ -418,7 +420,7 @@ class TextSpanFieldPlus extends StatefulWidget {
   ///
   /// This widget builds an [EditableText] and will ensure that the keyboard is
   /// showing when it is tapped by calling [EditableTextState.requestKeyboard()].
-  final FocusNode focusNode;
+  final FocusNode? focusNode;
 
   /// The decoration to show around the text field.
   ///
@@ -436,7 +438,7 @@ class TextSpanFieldPlus extends StatefulWidget {
   ///
   /// Defaults to [TextInputAction.newline] if [keyboardType] is
   /// [TextInputType.multiline] and [TextInputAction.done] otherwise.
-  final TextInputAction textInputAction;
+  final TextInputAction? textInputAction;
 
   /// {@macro flutter.widgets.editableText.textCapitalization}
   final TextCapitalization textCapitalization;
@@ -446,19 +448,19 @@ class TextSpanFieldPlus extends StatefulWidget {
   /// This text style is also used as the base style for the [decoration].
   ///
   /// If null, defaults to the `subhead` text style from the current [Theme].
-  final TextStyle style;
+  final TextStyle? style;
 
   /// {@macro flutter.widgets.editableText.strutStyle}
-  final StrutStyle strutStyle;
+  final StrutStyle? strutStyle;
 
   /// {@macro flutter.widgets.editableText.textAlign}
   final TextAlign textAlign;
 
   /// {@macro flutter.material.inputDecorator.textAlignVertical}
-  final TextAlignVertical textAlignVertical;
+  final TextAlignVertical? textAlignVertical;
 
   /// {@macro flutter.widgets.editableText.textDirection}
-  final TextDirection textDirection;
+  final TextDirection? textDirection;
 
   /// {@macro flutter.widgets.editableText.autofocus}
   final bool autofocus;
@@ -473,10 +475,10 @@ class TextSpanFieldPlus extends StatefulWidget {
   final bool enableSuggestions;
 
   /// {@macro flutter.widgets.editableText.maxLines}
-  final int maxLines;
+  final int? maxLines;
 
   /// {@macro flutter.widgets.editableText.minLines}
-  final int minLines;
+  final int? minLines;
 
   /// {@macro flutter.widgets.editableText.expands}
   final bool expands;
@@ -489,10 +491,10 @@ class TextSpanFieldPlus extends StatefulWidget {
   /// If not set, select all and paste will default to be enabled. Copy and cut
   /// will be disabled if [obscureText] is true. If [readOnly] is true,
   /// paste and cut will be disabled regardless.
-  final ToolbarOptions toolbarOptions;
+  final ToolbarOptions? toolbarOptions;
 
   /// {@macro flutter.widgets.editableText.showCursor}
-  final bool showCursor;
+  final bool? showCursor;
 
   /// If [maxLength] is set to this value, only the "current input length"
   /// part of the character counter is shown.
@@ -549,7 +551,7 @@ class TextSpanFieldPlus extends StatefulWidget {
   ///
   ///  * [LengthLimitingTextInputFormatter] for more information on how it
   ///    counts characters, and how it may differ from the intuitive meaning.
-  final int maxLength;
+  final int? maxLength;
 
   /// If true, prevents the field from allowing more than [maxLength]
   /// characters.
@@ -567,10 +569,10 @@ class TextSpanFieldPlus extends StatefulWidget {
   ///    runs and can validate and change ("format") the input value.
   ///  * [onEditingComplete], [onSubmitted], [onSelectionChanged]:
   ///    which are more specialized input change notifications.
-  final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onChanged;
 
   /// {@macro flutter.widgets.editableText.onEditingComplete}
-  final VoidCallback onEditingComplete;
+  final VoidCallback? onEditingComplete;
 
   /// {@macro flutter.widgets.editableText.onSubmitted}
   ///
@@ -579,36 +581,36 @@ class TextSpanFieldPlus extends StatefulWidget {
   ///  * [EditableText.onSubmitted] for an example of how to handle moving to
   ///    the next/previous field when using [TextInputAction.next] and
   ///    [TextInputAction.previous] for [textInputAction].
-  final ValueChanged<String> onSubmitted;
+  final ValueChanged<String>? onSubmitted;
 
   /// {@macro flutter.widgets.editableText.inputFormatters}
-  final List<TextInputFormatter> inputFormatters;
+  final List<TextInputFormatter>? inputFormatters;
 
   /// If false the text field is "disabled": it ignores taps and its
   /// [decoration] is rendered in grey.
   ///
   /// If non-null this property overrides the [decoration]'s
   /// [Decoration.enabled] property.
-  final bool enabled;
+  final bool? enabled;
 
   /// {@macro flutter.widgets.editableText.cursorWidth}
   final double cursorWidth;
 
   /// {@macro flutter.widgets.editableText.cursorRadius}
-  final Radius cursorRadius;
+  final Radius? cursorRadius;
 
   /// The color to use when painting the cursor.
   ///
   /// Defaults to [ThemeData.cursorColor] or [CupertinoTheme.primaryColor]
   /// depending on [ThemeData.platform].
-  final Color cursorColor;
+  final Color? cursorColor;
 
   /// The appearance of the keyboard.
   ///
   /// This setting is only honored on iOS devices.
   ///
   /// If unset, defaults to the brightness of [ThemeData.primaryColorBrightness].
-  final Brightness keyboardAppearance;
+  final Brightness? keyboardAppearance;
 
   /// {@macro flutter.widgets.editableText.scrollPadding}
   final EdgeInsets scrollPadding;
@@ -642,7 +644,7 @@ class TextSpanFieldPlus extends StatefulWidget {
   /// To listen to arbitrary pointer events without competing with the
   /// text field's internal gesture detector, use a [Listener].
   /// {@endtemplate}
-  final GestureTapCallback onTap;
+  final GestureTapCallback? onTap;
 
   /// Callback that generates a custom [InputDecorator.counter] widget.
   ///
@@ -671,13 +673,15 @@ class TextSpanFieldPlus extends StatefulWidget {
   /// }
   /// ```
   /// {@end-tool}
-  final InputCounterWidgetBuilder buildCounter;
+  final InputCounterWidgetBuilder? buildCounter;
 
   /// {@macro flutter.widgets.edtiableText.scrollPhysics}
-  final ScrollPhysics scrollPhysics;
+  final ScrollPhysics? scrollPhysics;
 
   /// {@macro flutter.widgets.editableText.scrollController}
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
+
+  final Function(String)? onAtInput;
 
   @override
   _TextSpanFieldPlusState createState() => _TextSpanFieldPlusState();
@@ -758,12 +762,12 @@ class TextSpanFieldPlus extends StatefulWidget {
 
 class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     implements TextSelectionGestureDetectorBuilderDelegate {
-  TextEditingController _controller;
+  TextEditingController? _controller;
+  _TextSpanFieldControllerWrapper? _wrapperController;
 
-  TextEditingController get _effectiveController =>
-      widget.controller ?? _controller;
+  TextEditingController get _effectiveController => _wrapperController!;
 
-  FocusNode _focusNode;
+  FocusNode? _focusNode;
 
   FocusNode get _effectiveFocusNode =>
       widget.focusNode ?? (_focusNode ??= FocusNode());
@@ -777,12 +781,12 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
 
   bool _showSelectionHandles = false;
 
-  _TextSpanFieldPlusSelectionGestureDetectorBuilder
+  late _TextSpanFieldPlusSelectionGestureDetectorBuilder
   _selectionGestureDetectorBuilder;
 
   // API for TextSelectionGestureDetectorBuilderDelegate.
   @override
-  bool forcePressEnabled;
+  bool forcePressEnabled = false;
 
   @override
   final GlobalKey<EditableTextState> editableTextKey =
@@ -823,12 +827,12 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
       counter = Semantics(
         container: true,
         liveRegion: isFocused,
-        child: widget.buildCounter(
-          context,
-          currentLength: currentLength,
-          maxLength: widget.maxLength,
-          isFocused: isFocused,
-        ),
+        child: widget.buildCounter!(
+        context,
+        currentLength: currentLength,
+        maxLength: widget.maxLength,
+        isFocused: isFocused,
+      ),
       );
       return effectiveDecoration.copyWith(counter: counter);
     }
@@ -840,20 +844,20 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     String semanticCounterText = '';
 
     // Handle a real maxLength (positive number)
-    if (widget.maxLength > 0) {
+    if (widget.maxLength != null && widget.maxLength! > 0) {
       // Show the maxLength in the counter
-      counterText += '/${widget.maxLength}';
+      counterText += '/${widget.maxLength!}';
       final int remaining =
-      (widget.maxLength - currentLength).clamp(0, widget.maxLength);
+      (widget.maxLength! - currentLength).clamp(0, widget.maxLength!);
       semanticCounterText =
           localizations.remainingTextFieldCharacterCount(remaining);
 
       // Handle length exceeds maxLength
-      if (_effectiveController.value.text.runes.length > widget.maxLength) {
+      if (_effectiveController.value.text.runes.length > widget.maxLength!) {
         return effectiveDecoration.copyWith(
           errorText: effectiveDecoration.errorText ?? '',
           counterStyle: effectiveDecoration.errorStyle ??
-              themeData.textTheme.caption.copyWith(color: themeData.errorColor),
+              themeData.textTheme.bodySmall?.copyWith(color: themeData.colorScheme.error),
           counterText: counterText,
           semanticCounterText: semanticCounterText,
         );
@@ -874,6 +878,12 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     if (widget.controller == null) {
       _controller = TextEditingController();
     }
+    _wrapperController = _TextSpanFieldControllerWrapper(
+      widget.controller ?? _controller!,
+      rangeStyles: widget.rangeStyles,
+      style: widget.style,
+    );
+    _wrapperController!.addListener(_didChangeTextEditingValue);
     _effectiveFocusNode.canRequestFocus = _isEnabled;
   }
 
@@ -881,9 +891,27 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
   void didUpdateWidget(TextSpanFieldPlus oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller == null && oldWidget.controller != null)
-      _controller = TextEditingController.fromValue(oldWidget.controller.value);
+      _controller = TextEditingController.fromValue(oldWidget.controller!.value);
     else if (widget.controller != null && oldWidget.controller == null)
       _controller = null;
+
+    if (widget.controller != oldWidget.controller) {
+      _wrapperController?.dispose();
+      _wrapperController = _TextSpanFieldControllerWrapper(
+        widget.controller ?? _controller!,
+        rangeStyles: widget.rangeStyles,
+        style: widget.style,
+      );
+      _wrapperController!.addListener(_didChangeTextEditingValue);
+    } else {
+      _wrapperController?.rangeStyles = widget.rangeStyles;
+      _wrapperController?.style = widget.style;
+      if (widget.rangeStyles != oldWidget.rangeStyles ||
+          widget.style != oldWidget.style) {
+        _wrapperController?.markNeedsBuild();
+      }
+    }
+
     _effectiveFocusNode.canRequestFocus = _isEnabled;
     if (_effectiveFocusNode.hasFocus && widget.readOnly != oldWidget.readOnly) {
       if (_effectiveController.selection.isCollapsed) {
@@ -892,19 +920,27 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     }
   }
 
+  void _didChangeTextEditingValue() {
+    setState(() {
+      // We use this to trigger a rebuild when the text changes
+    });
+  }
+
   @override
   void dispose() {
     _focusNode?.dispose();
+    _wrapperController?.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
-  EditableTextState get _editableText => editableTextKey.currentState;
+  EditableTextState get _editableText => editableTextKey.currentState!;
 
   void _requestKeyboard() {
-    _editableText?.requestKeyboard();
+    _editableText.requestKeyboard();
   }
 
-  bool _shouldShowSelectionHandles(SelectionChangedCause cause) {
+  bool _shouldShowSelectionHandles(SelectionChangedCause? cause) {
     // When the text field is activated by something that doesn't trigger the
     // selection overlay, we shouldn't show the handles either.
     if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
@@ -923,7 +959,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
   }
 
   void _handleSelectionChanged(
-      TextSelection selection, SelectionChangedCause cause) {
+      TextSelection selection, SelectionChangedCause? cause) {
     final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
     if (willShowSelectionHandles != _showSelectionHandles) {
       setState(() {
@@ -934,7 +970,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     switch (Theme.of(context).platform) {
       case TargetPlatform.iOS:
         if (cause == SelectionChangedCause.longPress) {
-          _editableText?.bringIntoView(selection.base);
+          _editableText.bringIntoView(selection.base);
         }
         return;
       case TargetPlatform.android:
@@ -955,7 +991,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
   void _handleHover(bool hovering) {
     if (hovering != _isHovering) {
       setState(() {
-        return _isHovering = hovering;
+        _isHovering = hovering;
       });
     }
   }
@@ -968,16 +1004,16 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     assert(debugCheckHasDirectionality(context));
     assert(
     !(widget.style != null &&
-        widget.style.inherit == false &&
-        (widget.style.fontSize == null || widget.style.textBaseline == null)),
+        widget.style!.inherit == false &&
+        (widget.style!.fontSize == null || widget.style!.textBaseline == null)),
     'inherit false style must supply fontSize and textBaseline',
     );
 
     final ThemeData themeData = Theme.of(context);
     // ignore: deprecated_member_use
-    final TextStyle style = themeData.textTheme.subhead.merge(widget.style);
+    final TextStyle style = (themeData.textTheme.titleMedium ?? const TextStyle()).merge(widget.style);
     final Brightness keyboardAppearance =
-        widget.keyboardAppearance ?? themeData.primaryColorBrightness;
+        widget.keyboardAppearance ?? themeData.colorScheme.brightness;
     final TextEditingController controller = _effectiveController;
     final FocusNode focusNode = _effectiveFocusNode;
     final List<TextInputFormatter> formatters =
@@ -985,12 +1021,12 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     if (widget.maxLength != null && widget.maxLengthEnforced)
       formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
 
-    TextSelectionControls textSelectionControls;
-    bool paintCursorAboveText;
-    bool cursorOpacityAnimates;
-    Offset cursorOffset;
-    Color cursorColor = widget.cursorColor;
-    Radius cursorRadius = widget.cursorRadius;
+    TextSelectionControls? textSelectionControls;
+    bool paintCursorAboveText = false;
+    bool cursorOpacityAnimates = false;
+    Offset? cursorOffset;
+    Color? cursorColor = widget.cursorColor;
+    Radius? cursorRadius = widget.cursorRadius;
 
     switch (themeData.platform) {
       case TargetPlatform.iOS:
@@ -1010,7 +1046,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
         textSelectionControls = materialTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
-        cursorColor ??= themeData.cursorColor;
+        cursorColor ??= themeData.textSelectionTheme.cursorColor ?? themeData.colorScheme.primary;
         break;
       default:
           break;
@@ -1021,8 +1057,8 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
         rangeStyles: widget.rangeStyles,
         key: editableTextKey,
         readOnly: widget.readOnly,
-        toolbarOptions: widget.toolbarOptions,
-        showCursor: widget.showCursor,
+        // toolbarOptions removed
+        showCursor: widget.showCursor ?? true,
         showSelectionHandles: _showSelectionHandles,
         controller: controller,
         focusNode: focusNode,
@@ -1040,7 +1076,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
         maxLines: widget.maxLines,
         minLines: widget.minLines,
         expands: widget.expands,
-        selectionColor: themeData.textSelectionColor,
+        selectionColor: themeData.textSelectionTheme.selectionColor ?? themeData.colorScheme.primary.withOpacity(0.4),
         selectionControls:
         widget.selectionEnabled ? textSelectionControls : null,
         onChanged: widget.onChanged,
@@ -1052,7 +1088,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
         rendererIgnoresPointer: true,
         cursorWidth: widget.cursorWidth,
         cursorRadius: cursorRadius,
-        cursorColor: cursorColor,
+        cursorColor: cursorColor ?? themeData.colorScheme.primary,
         cursorOpacityAnimates: cursorOpacityAnimates,
         cursorOffset: cursorOffset,
         paintCursorAboveText: paintCursorAboveText,
@@ -1069,7 +1105,7 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
     if (widget.decoration != null) {
       child = AnimatedBuilder(
         animation: Listenable.merge(<Listenable>[focusNode, controller]),
-        builder: (BuildContext context, Widget child) {
+        builder: (BuildContext context, Widget? child) {
           return InputDecorator(
             decoration: _getEffectiveDecoration(),
             baseStyle: widget.style,
@@ -1092,11 +1128,11 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
         onExit: (PointerExitEvent event) => _handleHover(false),
         child: AnimatedBuilder(
           animation: controller, // changes the _currentLength
-          builder: (BuildContext context, Widget child) {
+          builder: (BuildContext context, Widget? child) {
             return Semantics(
               maxValueLength: widget.maxLengthEnforced &&
                   widget.maxLength != null &&
-                  widget.maxLength > 0
+                  widget.maxLength! > 0
                   ? widget.maxLength
                   : null,
               currentValueLength: _currentLength,
@@ -1116,5 +1152,111 @@ class _TextSpanFieldPlusState extends State<TextSpanFieldPlus>
         ),
       ),
     );
+  }
+}
+
+class _TextSpanFieldControllerWrapper extends TextEditingController {
+  final TextEditingController original;
+  List<RangeStyle>? rangeStyles;
+  TextStyle? style;
+  bool _isSyncing = false;
+
+  _TextSpanFieldControllerWrapper(
+    this.original, {
+    this.rangeStyles,
+    this.style,
+  }) : super.fromValue(original.value) {
+    original.addListener(_syncFromOriginal);
+  }
+
+  void _syncFromOriginal() {
+    if (_isSyncing) return;
+    if (value != original.value) {
+      _isSyncing = true;
+      value = original.value;
+      _isSyncing = false;
+    }
+  }
+
+  @override
+  set value(TextEditingValue newValue) {
+    super.value = newValue;
+    if (_isSyncing) return;
+    if (original.value != newValue) {
+      _isSyncing = true;
+      original.value = newValue;
+      _isSyncing = false;
+    }
+  }
+
+  void markNeedsBuild() {
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    original.removeListener(_syncFromOriginal);
+    super.dispose();
+  }
+
+  @override
+  TextSpan buildTextSpan(
+      {required BuildContext context,
+      TextStyle? style,
+      required bool withComposing}) {
+    final String text = value.text;
+    if (rangeStyles != null) {
+      var items = getRanges();
+      var children = <TextSpan>[];
+      for (var item in items) {
+        if (item.range.end <= text.length) {
+          children.add(
+            TextSpan(style: item.style, text: item.range.textInside(text)),
+          );
+        }
+      }
+      return TextSpan(style: this.style ?? style, children: children);
+    }
+    return TextSpan(style: this.style ?? style, text: text);
+  }
+
+  List<RangeStyle> getRanges() {
+    if (rangeStyles == null) return [];
+    var source = List<RangeStyle>.from(rangeStyles!);
+    source.sort();
+    var result = <RangeStyle>[];
+    RangeStyle? prev;
+    for (var item in source) {
+      if (prev == null) {
+        if (item.range.start > 0) {
+          result.add(RangeStyle(
+            range: TextRange(start: 0, end: item.range.start),
+          ));
+        }
+        result.add(item);
+        prev = item;
+        continue;
+      } else {
+        if (prev.range.end > item.range.start) {
+          throw StateError(
+              'Invalid (intersecting) ranges for annotated field');
+        } else if (prev.range.end < item.range.start) {
+          result.add(RangeStyle(
+            range: TextRange(start: prev.range.end, end: item.range.start),
+          ));
+        }
+        result.add(item);
+        prev = item;
+      }
+    }
+    final String text = value.text;
+    if (result.isNotEmpty && result.last.range.end < text.length) {
+      result.add(RangeStyle(
+        range: TextRange(start: result.last.range.end, end: text.length),
+      ));
+    } else if (result.isEmpty && text.isNotEmpty) {
+       // Handle case where rangeStyles is empty but text is not
+    }
+    return result;
   }
 }

@@ -4,8 +4,8 @@ version: 1.0.8
 homepage: https://github.com/ihongwu/text_span_field_plus
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
-  flutter: ">=1.17.0 <2.0.0"
+  sdk: ">=3.7.2 <4.0.0"
+  # flutter: ">=1.17.0 <2.0.0"
 
 dependencies:
   flutter:

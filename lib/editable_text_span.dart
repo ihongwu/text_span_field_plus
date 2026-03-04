@@ -9,57 +9,57 @@ import 'range_style.dart';
 /// 2. 增加 style 属性达到动态样式控制
 class EditableTextSpan extends EditableText {
   /// 自定义范围样式
-  final List<RangeStyle> rangeStyles;
+  final List<RangeStyle>? rangeStyles;
 
   EditableTextSpan({
-    Key key,
+    Key? key,
     this.rangeStyles,
-    @required controller,
-    @required focusNode,
-    readOnly = false,
-    obscureText = false,
-    autocorrect = true,
-    enableSuggestions = true,
-    @required style,
-    StrutStyle strutStyle,
-    @required cursorColor,
-    @required backgroundCursorColor,
-    textAlign = TextAlign.start,
-    textDirection,
-    locale,
-    textScaleFactor,
-    maxLines = 1,
-    minLines,
-    expands = false,
-    forceLine = true,
-    textWidthBasis = TextWidthBasis.parent,
-    autofocus = false,
-    bool showCursor,
-    showSelectionHandles = false,
-    selectionColor,
-    selectionControls,
-    TextInputType keyboardType,
-    textInputAction,
-    textCapitalization = TextCapitalization.none,
-    onChanged,
-    onEditingComplete,
-    onSubmitted,
-    onSelectionChanged,
-    onSelectionHandleTapped,
-    List<TextInputFormatter> inputFormatters,
-    rendererIgnoresPointer = false,
-    cursorWidth = 2.0,
-    cursorRadius,
-    cursorOpacityAnimates = false,
-    cursorOffset,
-    paintCursorAboveText = false,
-    scrollPadding = const EdgeInsets.all(20.0),
-    keyboardAppearance = Brightness.light,
-    dragStartBehavior = DragStartBehavior.start,
-    enableInteractiveSelection = true,
-    scrollController,
-    scrollPhysics,
-    toolbarOptions = const ToolbarOptions(
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    bool readOnly = false,
+    bool obscureText = false,
+    bool autocorrect = true,
+    bool enableSuggestions = true,
+    required TextStyle style,
+    StrutStyle? strutStyle,
+    required Color cursorColor,
+    required Color backgroundCursorColor,
+    TextAlign textAlign = TextAlign.start,
+    TextDirection? textDirection,
+    Locale? locale,
+    double? textScaleFactor,
+    int? maxLines = 1,
+    int? minLines,
+    bool expands = false,
+    bool forceLine = true,
+    TextWidthBasis textWidthBasis = TextWidthBasis.parent,
+    bool autofocus = false,
+    bool showCursor = true,
+    bool showSelectionHandles = false,
+    Color? selectionColor,
+    TextSelectionControls? selectionControls,
+    TextInputType keyboardType = TextInputType.text,
+    TextInputAction? textInputAction,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    ValueChanged<String>? onChanged,
+    VoidCallback? onEditingComplete,
+    ValueChanged<String>? onSubmitted,
+    SelectionChangedCallback? onSelectionChanged,
+    VoidCallback? onSelectionHandleTapped,
+    List<TextInputFormatter>? inputFormatters = const [],
+    bool rendererIgnoresPointer = false,
+    double cursorWidth = 2.0,
+    Radius? cursorRadius,
+    bool cursorOpacityAnimates = false,
+    Offset? cursorOffset,
+    bool paintCursorAboveText = false,
+    EdgeInsets scrollPadding = const EdgeInsets.all(20.0),
+    Brightness keyboardAppearance = Brightness.light,
+    DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+    bool enableInteractiveSelection = true,
+    ScrollController? scrollController,
+    ScrollPhysics? scrollPhysics,
+    ToolbarOptions toolbarOptions = const ToolbarOptions(
       copy: true,
       cut: true,
       paste: true,
@@ -80,7 +80,7 @@ class EditableTextSpan extends EditableText {
           textAlign: textAlign,
           textDirection: textDirection,
           locale: locale,
-          textScaleFactor: textScaleFactor,
+          textScaler: textScaleFactor != null ? TextScaler.linear(textScaleFactor) : TextScaler.noScaling,
           maxLines: maxLines,
           minLines: minLines,
           expands: expands,
@@ -112,7 +112,6 @@ class EditableTextSpan extends EditableText {
           enableInteractiveSelection: enableInteractiveSelection,
           scrollController: scrollController,
           scrollPhysics: scrollPhysics,
-          toolbarOptions: toolbarOptions,
         );
 
   @override
@@ -121,67 +120,7 @@ class EditableTextSpan extends EditableText {
 
 class _EditableTextSpan extends EditableTextState {
   @override
-  EditableTextSpan get widget => super.widget;
+  EditableTextSpan get widget => super.widget as EditableTextSpan;
 
-  @override
-  TextSpan buildTextSpan() {
-    final String text = textEditingValue.text;
-    if (widget.rangeStyles != null) {
-      var items = getRanges();
-      var children = <TextSpan>[];
-      for (var item in items) {
-        // 在范围内才进行添加
-        if (item.range.end <= text.length) {
-          children.add(
-            TextSpan(style: item.style, text: item.range.textInside(text)),
-          );
-        }
-      }
-      return new TextSpan(style: widget.style, children: children);
-    }
-    return new TextSpan(style: widget.style, text: text);
-  }
 
-  /// 根据范围获得样式
-  List<RangeStyle> getRanges() {
-    var source = widget.rangeStyles;
-    source.sort();
-    var result = new List<RangeStyle>();
-    RangeStyle prev;
-    for (var item in source) {
-      if (prev == null) {
-        // First item, check if we need one before it.
-        if (item.range.start > 0) {
-          result.add(new RangeStyle(
-            range: TextRange(start: 0, end: item.range.start),
-          ));
-        }
-        result.add(item);
-        prev = item;
-        continue;
-      } else {
-        // Consequent item, check if there is a gap between.
-        if (prev.range.end > item.range.start) {
-          // Invalid ranges
-          throw new StateError(
-              'Invalid (intersecting) ranges for annotated field');
-        } else if (prev.range.end < item.range.start) {
-          result.add(RangeStyle(
-            range: TextRange(start: prev.range.end, end: item.range.start),
-          ));
-        }
-        // Also add current annotation
-        result.add(item);
-        prev = item;
-      }
-    }
-    // Also check for trailing range
-    final String text = textEditingValue.text;
-    if (result.last.range.end < text.length) {
-      result.add(RangeStyle(
-        range: TextRange(start: result.last.range.end, end: text.length),
-      ));
-    }
-    return result;
-  }
 }

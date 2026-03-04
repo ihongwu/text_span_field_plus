@@ -6,10 +6,11 @@ class GetTextSpan{
   final Color topicColor;
   final Color toUserColor;
   // 话题正则
-  RegExp topicReg = new RegExp(r"#([^#]{1,})#");
+  RegExp topicReg = RegExp(r"#([^#]{1,})#");
 
   // 用户提醒(@开头,以空格、冒号、斜杠/ 结束，不以@结束)
-  RegExp accountRemindReg = new RegExp(r"@([^\s|\/|:|@]+)");
+  // RegExp accountRemindReg = new RegExp(r"@([^\s|\/|:|@]+)");
+  RegExp accountRemindReg = RegExp(r"@([^@\u200b]+)\u200b");
 
   final String text;
   GetTextSpan(
@@ -18,7 +19,7 @@ class GetTextSpan{
       this.topicColor=Colors.blue, 
       this.toUserColor=Colors.pinkAccent
     }
-  ) : assert(text!=null);
+  );
 
   // 根据话题、@标识获取字符串列表
   List getResultList<T>(String text,RegExp regExp,String tag){
@@ -37,9 +38,17 @@ class GetTextSpan{
           ]);
       }
       // 拼接tag开头空格结尾的字符串
-      textList.addAll([
-        {'type':tag,'value':text.substring(m.start,m.end)}
-      ]);
+      if(tag == '@') {
+        String v = text.substring(m.start+1,m.end).replaceAll('\u200b', '');
+        textList.addAll([
+          {'type':tag,'value':text.substring(m.start,m.end),'v': v}
+        ]);
+      } else {
+        textList.addAll([
+          {'type':tag,'value':text.substring(m.start,m.end),'v': text.substring(m.start,m.end)}
+        ]);
+      }
+
       end = m.end;
     }
     if(text.length > end) {
@@ -53,11 +62,11 @@ class GetTextSpan{
 
   // 获取话题+@的总列表数据
   List getResult(){
-      List remindReg = this.getResultList(this.text, this.accountRemindReg, '@');
+      List remindReg = getResultList(text, accountRemindReg, '@');
       List remindRegNew = [];
       for (int i = 0; i < remindReg.length; i++) {
         if(remindReg[i]['type'] == 'text') {
-           var topic = this.getResultList(remindReg[i]['value'], this.topicReg, '#');
+           var topic = getResultList(remindReg[i]['value'], topicReg, '#');
            for (var j = 0; j < topic.length; j++) {
               remindRegNew.addAll([topic[j]]);
            }
@@ -68,22 +77,22 @@ class GetTextSpan{
      return remindRegNew;
   }
 
-  List<RangeStyle> getTextFieldStyle() {
+  List<RangeStyle>? getTextFieldStyle() {
     List<RangeStyle> result = [];
     List textList = getResult();
+    int currentIndex = 0;
     textList.forEach((item) {
-      if (item['type']!='text') {
-        RegExp regExp = new RegExp(r"("+item['value']+")");
-        for (Match m in regExp.allMatches(this.text)) {
-          result.add(
-            RangeStyle(
-              range: TextRange(start: m.start, end: m.end),
-              style: TextStyle(color: item['type']=='#' ? topicColor : toUserColor),
-            ),
-          );
-        }
+      String value = item['value'];
+      if (item['type'] != 'text') {
+        result.add(
+          RangeStyle(
+            range: TextRange(start: currentIndex, end: currentIndex + value.length),
+            style: TextStyle(color: item['type'] == '#' ? topicColor : toUserColor),
+          ),
+        );
       }
+      currentIndex += value.length;
     });
-    return result.length == 0 ? null : result;
+    return result.isEmpty ? null : result;
   }
 }

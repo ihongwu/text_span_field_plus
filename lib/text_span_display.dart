@@ -3,18 +3,18 @@ import 'package:flutter/material.dart';
 import 'get_text_span.dart';
 class TextSpanDisplay extends StatefulWidget {
   final String text;
-  final TextStyle style;
+  final TextStyle? style;
   final Color topicColor;
   final Color toUserColor;
-  final onTap;
+  final ValueChanged<Map>? onTap;
   TextSpanDisplay({
-    Key key, 
-    this.text, 
+    Key? key, 
+    required this.text, 
     this.style, 
     this.topicColor=Colors.blue, 
     this.toUserColor=Colors.pinkAccent, 
     this.onTap
-    }) : assert(text != null) , super(key: key);
+    }) : super(key: key);
   @override
   _TextSpanDisplayState createState() => _TextSpanDisplayState();
 }
@@ -34,7 +34,8 @@ class _TextSpanDisplayState extends State<TextSpanDisplay> {
           text: data['value'],
           style: TextStyle(color: widget.toUserColor),
           recognizer:TapGestureRecognizer()..onTap = (){
-            widget.onTap({'type':'@','value':data['value']});
+            String value = data['value'].replaceAll('\u200b','');
+            widget.onTap?.call({'type':'@','value':value,'v': value.substring(1,value.length)});
           }
         );
       } else if (data['type'] == '#') {
@@ -42,7 +43,7 @@ class _TextSpanDisplayState extends State<TextSpanDisplay> {
           text: data['value'],
           style: TextStyle(color: widget.topicColor),
           recognizer:TapGestureRecognizer()..onTap = (){
-            widget.onTap({'type':'#','value':data['value']});
+            widget.onTap?.call({'type':'#','value':data['value']});
           }
         );
       }

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key}) : super(key: key);
+  MyHomePage({super.key});
 
 
   @override
@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             TextSpanFieldPlus(
-              maxLines: null,
+              maxLines: 3,
               onChanged: (value){
                   setState(() {
                     text = value;

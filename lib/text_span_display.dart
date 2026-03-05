@@ -6,6 +6,7 @@ class TextSpanDisplay extends StatefulWidget {
   final TextStyle? style;
   final Color topicColor;
   final Color toUserColor;
+  final TextAlign textAlign;
   final ValueChanged<Map>? onTap;
   TextSpanDisplay({
     Key? key, 
@@ -13,6 +14,7 @@ class TextSpanDisplay extends StatefulWidget {
     this.style, 
     this.topicColor=Colors.blue, 
     this.toUserColor=Colors.pinkAccent, 
+    this.textAlign=TextAlign.left,
     this.onTap
     }) : super(key: key);
   @override
@@ -65,6 +67,7 @@ class _TextSpanDisplayState extends State<TextSpanDisplay> {
           children: spanListWidget(),
           style: widget.style
         ),
+        textAlign: widget.textAlign,
     );
   }
 }
